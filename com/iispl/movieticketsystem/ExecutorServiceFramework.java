@@ -19,10 +19,10 @@ public class ExecutorServiceFramework {
 
     public static void newFixedThreadPool() {
         ExecutorService executorService = Executors.newFixedThreadPool(4);
-
+ 
         List<Future<Ticket>> tickets = new ArrayList<>();
 
-        final int NUMBER_OF_REQUEST = 3;
+        final int NUMBER_OF_REQUEST = 6;
 
         for (int i = 1; i <= NUMBER_OF_REQUEST; i++) {
             Callable<Ticket> request = () -> {

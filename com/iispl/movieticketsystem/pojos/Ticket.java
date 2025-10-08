@@ -72,12 +72,12 @@ public class Ticket {
 		this.date = date;
 	}
 
-	public long getCustomerId() {
-		return customerId;
+	public String getCustomerName() {
+		return customerName;
 	}
 
-	public void setCustomerId(long customerId) {
-		this.customerId = customerId;
+	public void setCustomerName(String customerName) {
+		this.customerName = customerName;
 	}
 
 	@Override

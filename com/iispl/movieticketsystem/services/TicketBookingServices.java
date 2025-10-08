@@ -6,9 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import javax.security.auth.login.FailedLoginException;
-
-import com.iispl.movieticketsystem.data.CustomerData;
 import com.iispl.movieticketsystem.display.Display;
 import com.iispl.movieticketsystem.exceptions.FailedTicketBookingException;
 import com.iispl.movieticketsystem.pojos.Customer;
@@ -33,9 +30,9 @@ public class TicketBookingServices {
 		ticket_Prices.put("Diamond", 200.0);
 	}
 
-	private Map<Integer, Ticket> ticketInfo = new HashMap<>();
+	//private Map<Integer, Ticket> ticketInfo = new HashMap<>();
 
-	private boolean seats[] = new boolean[TOTAL_SEATS];
+	//private boolean seats[] = new boolean[TOTAL_SEATS];
 
 	private static List<Transaction> transactions = new ArrayList<>();
 
@@ -58,7 +55,7 @@ public class TicketBookingServices {
 				// Checking availability of ticket
 				if (availableSeats < numberOfTicket) {
 					throw new FailedTicketBookingException(
-							String.format("%s, %d seats are not available to book. Available seats %d",
+							String.format("%s : %d seats are not available to book. Available seats %d\n",
 									customerName, numberOfTicket, availableSeats));
 				}
 
@@ -70,10 +67,12 @@ public class TicketBookingServices {
 
 			TicketBooking booked = null;
 			if (paymentStatus) {
+				synchronized (TicketBookingServices.class){
+				Display.print(customerName + " : "+ numberOfTicket + " Ticket boooked successfully. - " + "from " + Thread.currentThread().getName()
+						+ " Remaining seats: " + availableSeats + "\n");
+				}
+				
 				booked = new TicketBooking("success", true);
-				Display.print(customerName + " "+ numberOfTicket + " Ticket boooked successfully. - " + "from " + Thread.currentThread().getName()
-						+ " Remaining seats: " + availableSeats);
-
 				Ticket ticket = new Ticket(customerName, totalAmount, numberOfTicket, seatType);
 
 				// Assign seat No... Need to implement
@@ -110,7 +109,7 @@ public class TicketBookingServices {
 	}
 
 	public static void setTicketPrice(String name, double price) {
-		ticket_Price.put(name, price);
+		ticket_Prices.put(name, price);
 	}
 
 	public static int availableSeats() {

@@ -6,8 +6,7 @@ public class TicketBooking {
 	private String id;
 	private String paymentStatus;
 	private LocalDateTime date;
-	private boolean status;
-	private Transaction transaction;	
+	private boolean status;	
 	
 	private static long getNewId = 1;
 	
