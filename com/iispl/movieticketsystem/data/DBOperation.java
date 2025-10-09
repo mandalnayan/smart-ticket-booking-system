@@ -8,10 +8,13 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.concurrent.ThreadLocalRandom;
 
+import com.iispl.movieticketsystem.pojos.Customer;
+
 public class DBOperation {
 
-    public static void readTable(Connection connection, String tableName) {
+    public static void readTable(String tableName) {
             try {
+            	Connection connection = DBConnection.establishConnection();
                  // 3. Statement
                 Statement statement = connection.createStatement();
             
@@ -37,13 +40,13 @@ public class DBOperation {
             }
     }
     
-    public static void createTable(Connection connection, String tableName) {
+    public static void createTable(Connection connection, String tableName, String col1, String col2) {
         try {
             Statement statement = connection.createStatement();
-            String query = String.format("CREATE TABLE %S (Id int AUTO_INCREMENT Primary Key, name varchar(20), mobileNumber varchar(20))", tableName); 
+            String query = String.format("CREATE TABLE %S (Id int AUTO_INCREMENT Primary Key,  varchar(20) not null, mobileNumber varchar(20), email varchar(20))", tableName); 
 
-            int rows = statement.executeUpdate(query);
-            if (rows >= 0) {
+            boolean isCreated = statement.execute(query);
+            if (isCreated) {
                 System.out.println(tableName + " table created successfully");
             }
        
@@ -72,6 +75,29 @@ public class DBOperation {
             int rs[] = pst.executeBatch();
             if (rs.length > 0) {
                 System.out.println(String.format("%d records has inserted successfully.", rs.length));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    public static void insertCustomerData(Customer customer) {
+    	Connection connection = DBConnection.establishConnection();
+    	String query = String.format("INSERT INTO CUSTOMER(name, mobileNumber, status) VALUES(?, ?, ?)");
+        
+        PreparedStatement pst;
+        try {
+            pst = connection.prepareStatement(query);            
+            String name = customer.getName();
+            String mobNo = customer.getMobileNo();
+
+            pst.setString(1, name);
+            pst.setString(2, mobNo);
+            pst.setBoolean(3, true);
+            int rowsAffected = pst.executeUpdate();         
+            
+            if (rowsAffected > 0) {
+                System.out.println(String.format("%s records has inserted successfully.", customer.getName()));
             }
         } catch (SQLException e) {
             e.printStackTrace();

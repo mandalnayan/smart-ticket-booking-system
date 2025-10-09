@@ -4,15 +4,21 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
+/**
+ * Database connection establishing.
+ */
 public class DBConnection {
+	
+	 private static final String DB_NAME = "ticket_booking";
+	 
     /**
      * EstablishConnection
      * @param DB_NAME
      */
-    public static Connection establishConnection(String DB_NAME) {
+    public static Connection establishConnection() {
         String url = "jdbc:mysql://localhost:3306/" + DB_NAME;
         String user = "root";
-        String password = "Nayan@2002";
+        String password = "root123";
 
         try {
             //1. load the driver

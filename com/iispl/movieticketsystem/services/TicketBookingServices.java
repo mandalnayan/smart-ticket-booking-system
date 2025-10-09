@@ -5,7 +5,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Scanner;
+import java.util.Set;
 
+import com.iispl.movieticketsystem.data.DBOperation;
 import com.iispl.movieticketsystem.display.Display;
 import com.iispl.movieticketsystem.exceptions.FailedTicketBookingException;
 import com.iispl.movieticketsystem.pojos.Customer;
@@ -38,10 +41,40 @@ public class TicketBookingServices {
 
 	public static Ticket bookTicket() {
 		
-		Customer customer = new Customer("Ram", "121299");
-		int numberOfTickets = new Random().nextInt(50);		
+		Scanner input = new Scanner(System.in);
+		
+		System.out.println("Enter your name");
+		String name = input.nextLine();
+		
+		System.out.println("Enter number of tickets");
+		int numberOfTickets = Integer.parseInt(input.next());
+		
+		System.out.println("Enter mobile number");
+		String mobNo = input.nextLine();
+		
+//		Saving customer data
+		Customer customer = new Customer(name, mobNo);
+		DBOperation.insertCustomerData(customer);
+		int attempts = 2;
+		List<String> ticketsTypes = new ArrayList<>(ticket_Prices.keySet());
 		String seatType = "Diamond";
-
+		while(attempts-- > 0) {
+			
+			System.out.println("\nTypes of ticket.");
+			int i = 1;
+			for(String type : ticketsTypes) {
+				System.out.printf("Press %d for %s | ", i++, type);				
+			}
+			
+			int type = input.nextInt();
+			if (type < 1 || type > ticketsTypes.size()) {
+				System.out.println("\n Invalid ticket type. Please choose correct type");
+				continue;
+			}
+			seatType = ticketsTypes.get(type-1);
+			break;
+			
+	}
 		return bookTicket(numberOfTickets, seatType, customer.getName());		
 	}
 	/**
