@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 import com.iispl.movieticketsystem.pojos.Customer;
@@ -25,14 +26,18 @@ public class DBOperation {
                ResultSet result = statement.executeQuery(readQuery);       
                ResultSetMetaData metaData = result.getMetaData();
                int columnCount = metaData.getColumnCount();
-              while(result.next()) {
+               if (!result.next()) {
+                 System.out.println("No record found..!");
+                 return;
+               }
+             do {
                 for (int i = 1; i <= columnCount; i++) {
                     String columnName = metaData.getColumnName(i);
                     Object value = result.getObject(i);
                     System.out.print(columnName + ": " + value + " | ");
                 }
                 System.out.print(Thread.currentThread().getName() + " \n");
-            }
+            } while(result.next());
 
 
           } catch(SQLException ex) {
@@ -40,13 +45,14 @@ public class DBOperation {
             }
     }
     
-    public static void createTable(Connection connection, String tableName, String col1, String col2) {
+    public static void createTable(String tableName, String coloumns) {
         try {
+            Connection connection = DBConnection.establishConnection();
             Statement statement = connection.createStatement();
-            String query = String.format("CREATE TABLE %S (Id int AUTO_INCREMENT Primary Key,  varchar(20) not null, mobileNumber varchar(20), email varchar(20))", tableName); 
+            String query = "CREATE TABLE " + tableName + " (Id int AUTO_INCREMENT Primary Key, " + coloumns +")";
 
-            boolean isCreated = statement.execute(query);
-            if (isCreated) {
+            int isCreated = statement.executeUpdate(query);
+            if (isCreated >= 0) {
                 System.out.println(tableName + " table created successfully");
             }
        

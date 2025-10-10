@@ -18,7 +18,7 @@ public class DBConnection {
     public static Connection establishConnection() {
         String url = "jdbc:mysql://localhost:3306/" + DB_NAME;
         String user = "root";
-        String password = "root123";
+        String password = "Nayan@2002";
 
         try {
             //1. load the driver

@@ -1,10 +1,8 @@
 package com.iispl.movieticketsystem;
 
-import java.sql.Connection;
 import java.util.List;
 
 import com.iispl.movieticketsystem.data.CustomerData;
-import com.iispl.movieticketsystem.data.DBConnection;
 import com.iispl.movieticketsystem.data.DBOperation;
 import com.iispl.movieticketsystem.pojos.Customer;
 import com.iispl.movieticketsystem.pojos.Ticket;
@@ -13,12 +11,16 @@ import com.iispl.movieticketsystem.services.TicketBookingServices;
 public class App {
    	public static void main(String args[]) {
 
-        Thread thread1 = new Thread(() -> {
-            Menu.showMenu();
-        });
+        String columns = "totalSeats int, category varchar(20), amount double(15, 2), date DATETIME Default CURRENT_TIMESTAMP, status boolean";
+
+       // DBOperation.createTable("Ticket", columns);
+        DBOperation.readTable("Ticket");
+        // Thread thread1 = new Thread(() -> {
+        //     Menu.showMenu();
+        // });
        
 	
-        thread1.start();
+       // thread1.start();
     }
 
     public static void threadPoolBlock() {
@@ -55,7 +57,7 @@ public class App {
 		Ticket ticket = TicketBookingServices.bookTicket(totalNoOfTickets, type, customer.getName());
 
 		// Display the ticket
-		System.out.println(ticket);
+	//	System.out.println(ticket);
 	}
 	
     

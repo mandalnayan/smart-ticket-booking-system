@@ -4,9 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Scanner;
-import java.util.Set;
 
 import com.iispl.movieticketsystem.data.DBOperation;
 import com.iispl.movieticketsystem.display.Display;
@@ -47,7 +45,7 @@ public class TicketBookingServices {
 		String name = input.nextLine();
 		
 		System.out.println("Enter number of tickets");
-		int numberOfTickets = Integer.parseInt(input.next());
+		int numberOfTickets = Integer.parseInt(input.nextLine());
 		
 		System.out.println("Enter mobile number");
 		String mobNo = input.nextLine();
@@ -68,7 +66,7 @@ public class TicketBookingServices {
 			
 			int type = input.nextInt();
 			if (type < 1 || type > ticketsTypes.size()) {
-				System.out.println("\n Invalid ticket type. Please choose correct type");
+				System.out.println("\n Invalide ticket type. Please choose correct type");
 				continue;
 			}
 			seatType = ticketsTypes.get(type-1);
@@ -101,7 +99,7 @@ public class TicketBookingServices {
 			TicketBooking booked = null;
 			if (paymentStatus) {
 				synchronized (TicketBookingServices.class){
-				Display.print(customerName + " : "+ numberOfTicket + " Ticket boooked successfully. - " + "from " + Thread.currentThread().getName()
+				Display.print(customerName + " : "+ numberOfTicket + " Ticket boooked successfully.  Total Price: - " + totalAmount + "\nfrom " + Thread.currentThread().getName()
 						+ " Remaining seats: " + availableSeats + "\n");
 				}
 				
