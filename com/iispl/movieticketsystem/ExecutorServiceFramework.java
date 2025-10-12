@@ -26,7 +26,8 @@ public class ExecutorServiceFramework {
 
         for (int i = 1; i <= NUMBER_OF_REQUEST; i++) {
             Callable<Ticket> request = () -> {
-                return TicketBookingServices.bookTicket();
+                TicketBookingServices.bookTicket();
+                return null;
             };
             tickets.add(executorService.submit(request));
         }       
@@ -35,7 +36,7 @@ public class ExecutorServiceFramework {
             try {
                 Ticket t1 = ticket.get();
                 if (t1 != null) {
-                   Display.print(t1);
+                   Display.printMessage(t1);
                }
             } catch(ExecutionException | InterruptedException ex) {
                 ex.printStackTrace();

@@ -6,19 +6,20 @@ import java.util.List;
 
 public class Ticket {
 	
-	private long id;
+	private int id;
 	private long totalSeats;
 	private double amount;
 	private String category;
 	private LocalDateTime date;
+	private long customerId;
 	private boolean status;
 	
-	private static long generateId = 1;
 	private String customerName;
+
 	private List<Integer> seatNos;
 
-	public Ticket(String customerName, double amount, long totalSeats, String category) {
-		this.id = generateId++;
+	public Ticket(String customerName, long custId, double amount, long totalSeats, String category) {
+		this.customerId = custId;
 		this.customerName = customerName;
 		this.amount = amount;
 		this.totalSeats = totalSeats;
@@ -28,15 +29,27 @@ public class Ticket {
 		this.status = true;
 	}
 
-	public long getId() {
+	public int getId() {
 		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+	
+	public long getCustomerId() {
+		return customerId;
 	}
 
 	public List<Integer> getSeatNumbers() {
 		return seatNos;
 	}
 
-	public void setSeatNumbers(List<Integer> seatNos) {
+	public long getTotalSets() {
+		return totalSeats;
+	}
+
+	public void assignSeatNumbers(List<Integer> seatNos) {
 		this.seatNos = seatNos;
 	}
 
