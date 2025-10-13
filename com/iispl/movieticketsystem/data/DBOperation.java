@@ -1,6 +1,5 @@
 package com.iispl.movieticketsystem.data;
 
-import java.lang.Thread.State;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -10,7 +9,6 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Scanner;
 import java.util.concurrent.ThreadLocalRandom;
 
 import com.iispl.movieticketsystem.display.Display;
@@ -187,7 +185,6 @@ public class DBOperation {
     }
 
     public static boolean deleteTicketById(int ticketId, int n) {
-        String fetchQ = "SELECT seatNo FROM CustomerTicket where ticketId = ?";
         String fetchSeatTypeQ = "SELECT category FROM Ticket where id = ?";
         String deleteTicketQ = "DELETE FROM Ticket where id = ?";
         String updateTicketQ = "UPDATE TICKET SET totalSeats = ?, amount = ? where id = ?";
@@ -196,93 +193,77 @@ public class DBOperation {
         String updateSeatQ = "UPDATE SEAT SET is_booked = FALSE WHERE seat_number = ?";
 
         try (Connection connection = DBConnection.establishConnection()) {
+            List<Integer> seatNos = getSeatNosByTicketId(connection, ticketId);
             connection.setAutoCommit(false);
-            PreparedStatement pst = connection.prepareStatement(fetchQ);
-            pst.setInt(1, ticketId);
-            ResultSet rs = pst.executeQuery();
-            if (rs.next()) {
-                List<Integer> seatNos = new ArrayList<>();
-                do {
-                    seatNos.add(rs.getInt(1));
-                } while (rs.next());
+            int totalSeats = seatNos.size();
+            Display.printMessage("You have booked " + totalSeats + " seats");
+          
+                String message = n + " tickets cancelled successfully!";
+                if (n > totalSeats || n <= 0) {
+                    Display.printWarning("Entered seats are not valid..! Please try again");
+                } else if (totalSeats == n) {
+                    System.out.println("All ticket");
+                    PreparedStatement deletePst = connection.prepareStatement(deleteAllTicketQ);
+                    PreparedStatement deleteTicketPst = connection.prepareStatement(deleteTicketQ);
+                    deletePst.setInt(1, ticketId);
+                    deletePst.executeUpdate();
+                    deleteTicketPst.setInt(1, ticketId);
+                    deleteTicketPst.executeUpdate();
+                    PreparedStatement updatePst = connection.prepareStatement(updateSeatQ);
+                    seatNos.forEach((var seatNo) -> {
+                         try {
+                            updatePst.setInt(1, seatNo);
+                            updatePst.addBatch();
+                         } catch (SQLException e) {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                         }
+                    });
+                    updatePst.executeBatch();
+                    return true;
+                } else {
+                    PreparedStatement deletePst = connection.prepareStatement(deleteSpecificTicketQ);
+                    PreparedStatement updatePst = connection.prepareStatement(updateSeatQ);
+                    System.out.println(n + " ticket");
+                    int count = 1;
+                    for (int seatNo : seatNos) {
+                        deletePst.setInt(1, seatNo);
+                        deletePst.addBatch();
+                        updatePst.setInt(1, seatNo);
+                        updatePst.addBatch();
+                        System.out.println(seatNo + "Seat no is deleting.. ");
+                        if (count++ == n)
+                            break;
+                    }
 
-                int totalSeats = seatNos.size();
-                Display.printMessage("You have booked " + totalSeats + " seats");
-                try  {
-                    String message = n + " tickets cancelled successfully!";
-                    if (n > totalSeats || n <= 0) {
-                        Display.printWarning("Entered seats are not valid..! Please try again");
-                    } else if (totalSeats == n) {
-                        System.out.println("All ticket");
-                        PreparedStatement deletePst = connection.prepareStatement(deleteAllTicketQ);
-                        PreparedStatement deleteTicketPst = connection.prepareStatement(deleteTicketQ);
-                        deleteTicketPst.setInt(1, ticketId);
-                        deleteTicketPst.executeUpdate();
-                        deletePst.setInt(1, ticketId);
-                        int rows = deletePst.executeUpdate();
-                        deleteTicketPst.executeUpdate();
+                    deletePst.executeBatch();
+                    updatePst.executeBatch();
+                    PreparedStatement updateTicketPst = connection.prepareStatement(updateTicketQ);
+                    int reamaningSeat = totalSeats - n;
+                    PreparedStatement getSeatTypePst = connection.prepareStatement(fetchSeatTypeQ);
+                    getSeatTypePst.setInt(1, ticketId);
+                    ResultSet rs = getSeatTypePst.executeQuery();
+                    if (rs.next()) {
+                        String seatType = rs.getString(1);
+                        double totalAmount = TicketBookingServices.calculateTotalAmount(reamaningSeat, seatType);
+                        updateTicketPst.setInt(1, reamaningSeat);
+                        updateTicketPst.setDouble(2, totalAmount);
+                        updateTicketPst.setInt(3, ticketId);
+                        updateTicketPst.executeUpdate();
+                        connection.commit();
+                        Display.printMessage(message);
+                        return true;
                     } else {
-                        PreparedStatement deletePst = connection.prepareStatement(deleteSpecificTicketQ);
-                        System.out.println(n + " ticket");
-                        for (int i = 1; i <= n; i++) {
-                            seatNos.forEach((var seatNo) -> {
-                                try {
-                                    deletePst.setInt(1, seatNo);
-                                    deletePst.addBatch();
-                                } catch (SQLException e) {
-                                    e.printStackTrace();
-                                }
-                            });
-                        }
-
-                        // Update seat
-                          PreparedStatement updatePst = connection.prepareStatement(updateSeatQ);
-                        for (int i = 1; i <= n; i++) {
-                            seatNos.forEach((var seatNo) -> {
-                                try {
-                                    updatePst.setInt(1, seatNo);
-                                    updatePst.addBatch();
-                                } catch (SQLException e) {
-                                    e.printStackTrace();
-                                }
-                            });
-                        }
-                        deletePst.executeBatch();
-                        updatePst.executeBatch();
-                        PreparedStatement updateTicketPst = connection.prepareStatement(updateTicketQ);
-                        int reamaningSeat = totalSeats - n;
-                        PreparedStatement getSeatTypePst = connection.prepareStatement(fetchSeatTypeQ);
-                        getSeatTypePst.setInt(1, ticketId);
-                        rs = getSeatTypePst.executeQuery();
-                        if (rs.next()) {
-                            String seatType = rs.getString(1);
-                            double totalAmount = TicketBookingServices.calculateTotalAmount(reamaningSeat, seatType);
-                            updateTicketPst.setInt(1, reamaningSeat);
-                            updateTicketPst.setDouble(2, totalAmount);
-                            updateTicketPst.setInt(3, ticketId);
-                            updateTicketPst.executeUpdate();
-                            connection.commit();
-                            Display.printMessage(message);
-                        } else {
-                            Display.printAlert("Something went wrong. Please try again !!");
-                        }
+                        Display.printAlert("Something went wrong. Please try again !!");
                     }
-                } catch (NumberFormatException | NoSuchElementException ex) {
-                    try{
-                        connection.rollback();
-                    } catch(SQLException e) {
-                        System.out.println(e.getMessage());
-                    }
-                    Display.printAlert(ex.getMessage());
-                    return false;
-                }
+                }          
+            connection.rollback();
+            } catch (SQLException ex) {
+                Display.printAlert("ERROR ");
+                ex.printStackTrace();
+                return false;
             }
-            return false;
-        } catch (SQLException ex) {
-            Display.printAlert("ERROR ");
-            ex.printStackTrace();
-            return false;
-        }
+        return false;
     }
 
     public static void showTicketByID(int ticketId) {
@@ -296,8 +277,9 @@ public class DBOperation {
                 ResultSetMetaData data = rs.getMetaData();
                 StringBuilder ticket = new StringBuilder();
                 for (int i = 1; i <= data.getColumnCount(); i++) {
-                    ticket.append(data.getColumnName(i) + ": " + rs.getObject(i) +" ");
+                    ticket.append(data.getColumnName(i) + ": " + rs.getObject(i) + ", ");
                 }
+                ticket.append(getSeatNosByTicketId(connection, ticketId));
                 System.out.println(ticket);
             } else {
                 Display.printWarning("ID " + ticketId + " is invalid or doesn't booked successfully");
@@ -361,6 +343,22 @@ public class DBOperation {
 
     }
 
+    private static List<Integer> getSeatNosByTicketId(Connection connection, int ticketId) throws SQLException {
+        String fetchQ = "SELECT seatNo FROM CustomerTicket where ticketId = ?";
+
+        connection.setAutoCommit(false);
+        PreparedStatement pst = connection.prepareStatement(fetchQ);
+        pst.setInt(1, ticketId);
+        ResultSet rs = pst.executeQuery();
+        List<Integer> seatNos = new ArrayList<>();
+        if (rs.next()) {
+            do {
+                seatNos.add(rs.getInt(1));
+            } while (rs.next());
+        }
+        return seatNos;
+    }
+
     public static int availableSeats() {
         String FetchQ = "SELECT COUNT(seat_number) FROM Seat WHERE is_booked = FALSE";
 
@@ -373,4 +371,5 @@ public class DBOperation {
         }
 
     }
+
 }

@@ -1,27 +1,28 @@
 package com.iispl.movieticketsystem.pojos;
 
 public class CustomerTicket {
-    private static int ticketId;
-    private static int seatNo;
+    private int ticketId;
+    private int seatNo;
 
     public CustomerTicket(int ticketId) {
         this.ticketId = ticketId;
     }
 
-    public static int getTicketId() {
+    public int getTicketId() {
         return ticketId;
     }
 
-    public static void setTicketId(int ticketId) {
-        CustomerTicket.ticketId = ticketId;
+    public 
+     void setTicketId(int ticketId) {
+        ticketId = ticketId;
     }
 
-    public static int getSeatNo() {
+    public int getSeatNo() {
         return seatNo;
     }
 
-    public static void setSeatNo(int seatNo) {
-        CustomerTicket.seatNo = seatNo;
+    public void setSeatNo(int seatNo) {
+        seatNo = seatNo;
     }
     
     

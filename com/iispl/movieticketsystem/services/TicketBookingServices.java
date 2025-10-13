@@ -40,17 +40,42 @@ public class TicketBookingServices {
 	/*
 	 * Method to book ticket and save to database
 	 */
-	public static void bookTicket() {
+	public static void bookTicket(Scanner input) {
 		Customer customer = null;
-		Scanner input = new Scanner(System.in);
+		int attempts = 2;
+		int numberOfTickets = 0;
+		String mobNo = "";
+		String name = "";
+		String seatType = "";
 		try {
-			System.out.println("Enter your name");
-			String name = input.nextLine();
-			System.out.println("Enter mobile number");
-			String mobNo = input.nextLine();
-			System.out.println("Enter number of tickets");
-			int numberOfTickets = Integer.parseInt(input.nextLine());
+			while (attempts-- > 0) {
+				System.out.println("Enter your name");
+				name = input.nextLine().strip();
+				System.out.println("Enter mobile number");
+				mobNo = input.nextLine().strip();
+				System.out.println("Enter number of tickets");
+				numberOfTickets = Integer.parseInt(input.nextLine());
+				List<String> ticketsTypes = new ArrayList<>(ticket_Prices.keySet());
+				seatType = "Diamond";
 
+				if (name.isEmpty() || mobNo.isEmpty() || numberOfTickets <= 0) {
+					Display.printWarning("Enter data is not valid. Please enter correct data");
+					continue;
+				}
+				System.out.println("\nTypes of ticket.");
+				int i = 1;
+				for (String type : ticketsTypes) {
+					System.out.printf("Press %d for %s | ", i++, type);
+				}
+
+				int type = Integer.parseInt(input.nextLine());
+				if (type < 1 || type > ticketsTypes.size()) {
+					Display.printWarning("\n Invalide ticket type. Please choose correct type");
+					continue;
+				}
+				seatType = ticketsTypes.get(type - 1);
+				break;
+			}
 			// Creating Customer object
 			customer = new Customer(name, mobNo);
 
@@ -60,37 +85,16 @@ public class TicketBookingServices {
 				if (!DBOperation.insertCustomerData(customer)) {
 					System.out.println("Failed to insert data");
 				} else {
-					// DBOperation.read
-					int attempts = 2;
-					List<String> ticketsTypes = new ArrayList<>(ticket_Prices.keySet());
-					String seatType = "Diamond";
-					while (attempts-- > 0) {
 
-						System.out.println("\nTypes of ticket.");
-						int i = 1;
-						for (String type : ticketsTypes) {
-							System.out.printf("Press %d for %s | ", i++, type);
-						}
-
-						int type = input.nextInt();
-						if (type < 1 || type > ticketsTypes.size()) {
-							System.out.println("\n Invalide ticket type. Please choose correct type");
-							continue;
-						}
-						seatType = ticketsTypes.get(type - 1);
-						break;
-					}
 					Ticket ticket = bookTicket(numberOfTickets, seatType, customer);
 					if (ticket != null) {
 						if (DBOperation.insertTicket(connection, ticket)
 								&& DBOperation.assignSeatNo(connection, ticket, numberOfTickets)) {
 							connection.commit();
 							System.out.println(ticket);
-						} else {
-							System.out.println("Sorry failed to book ticket..");
+							return;
 						}
-					} else {
-						System.out.println("Sorry failed to book ticket..");
+						Display.printMessage(name + ": Sorry failed to book ticket..");
 					}
 				}
 			} catch (SQLException e) {
